@@ -1,0 +1,19 @@
+{
+  "name": "github-release-manager",
+  "version": "1.0.0",
+  "description": "Creates and downloads github releases",
+  "main": "create-release.js",
+  "scripts": {
+    "test": "node create-release.js <branch> <github_token> <owner> <repo>"
+  },
+  "keywords": [
+    "github",
+    "releases",
+    "deployment"
+  ],
+  "author": "Nate McDowell",
+  "license": "ISC",
+  "devDependencies": {
+    "request": "2.83.0"
+  }
+}
