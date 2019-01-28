@@ -39,10 +39,10 @@ class GithubReleaseCreator {
   
   getReleases() {
     http.makeGetRequest(
-      'https://api.github.com/repos/mdx-dev/platform-ui-2/releases' + TOKEN,
+      'https://api.github.com/repos/' + OWNER + '/' + REPO + '/releases' + TOKEN,
       HEADERS
     ).then(res => {
-  
+ 
       const releaseFound = JSON.parse(res.body).find(release => release.target_commitish === TRAVIS_BRANCH);
       if (releaseFound && releaseFound.assets && releaseFound.assets.length) {
   
