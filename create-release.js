@@ -1,5 +1,5 @@
 const HEADERS = {headers: {'User-Agent': 'request'}};
-const TRAVIS_BRANCH = process.argv[2];
+const TRAVIS_BRANCH_OR_TAG = process.argv[2] || process.argv[6];
 const GH_TOKEN = process.argv[3];
 const OWNER = process.argv[4];
 const REPO = process.argv[5];
@@ -12,8 +12,8 @@ class GithubReleaseCreator {
   
   getReleaseData() {
     return JSON.stringify({
-      tag_name: 'release-' + TRAVIS_BRANCH,
-      target_commitish: TRAVIS_BRANCH
+      tag_name: 'release-' + TRAVIS_BRANCH_OR_TAG,
+      target_commitish: TRAVIS_BRANCH_OR_TAG
     });
   }
   
@@ -43,7 +43,7 @@ class GithubReleaseCreator {
       HEADERS
     ).then(res => {
  
-      const releaseFound = JSON.parse(res.body).find(release => release.target_commitish === TRAVIS_BRANCH);
+      const releaseFound = JSON.parse(res.body).find(release => release.target_commitish === TRAVIS_BRANCH_OR_TAG);
       if (releaseFound && releaseFound.assets && releaseFound.assets.length) {
   
         http.makeDeleteRequest(
