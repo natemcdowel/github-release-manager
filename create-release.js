@@ -1,5 +1,7 @@
 const HEADERS = {headers: {'User-Agent': 'request'}};
 const TRAVIS_BRANCH_OR_TAG = process.argv[2] || process.argv[6];
+console.log(process.argv[2]);
+console.log(process.argv[6]);
 const GH_TOKEN = process.argv[3];
 const OWNER = process.argv[4];
 const REPO = process.argv[5];
@@ -24,8 +26,9 @@ class GithubReleaseCreator {
     http.makeFileUploadRequest(
       './release.tar.gz',
       'https://uploads.github.com/repos/' + OWNER + '/' + REPO + '/releases/' + id + '/assets' + TOKEN + '&name=release.tar.gz'
-    ).then(() => {
+    ).then(res => {
 
+      console.log(res);
       console.log('Release successfully uploaded...')
       process.exit(0);
 
@@ -42,7 +45,7 @@ class GithubReleaseCreator {
       'https://api.github.com/repos/' + OWNER + '/' + REPO + '/releases' + TOKEN,
       HEADERS
     ).then(res => {
- 
+      console.log(TRAVIS_BRANCH_OR_TAG);
       const releaseFound = JSON.parse(res.body).find(release => release.target_commitish === TRAVIS_BRANCH_OR_TAG);
       if (releaseFound && releaseFound.assets && releaseFound.assets.length) {
   
@@ -77,7 +80,7 @@ class GithubReleaseCreator {
       'https://api.github.com/repos/' + OWNER + '/' + REPO + '/releases' + TOKEN,
       this.getReleaseData()
     ).then(res => {
-
+      console.log(res);
       this.uploadReleaseZip(JSON.parse(res.body).id);
   
     });
