@@ -43,7 +43,7 @@ class GithubReleaseCreator {
       HEADERS
     ).then(res => {
       console.log(TRAVIS_BRANCH_OR_TAG);
-      const releaseFound = JSON.parse(res.body).find(release => release.tag_name === TRAVIS_BRANCH_OR_TAG);
+      const releaseFound = JSON.parse(res.body).find(release => release.tag_name === ('release-' + TRAVIS_BRANCH_OR_TAG));
       if (releaseFound && releaseFound.assets && releaseFound.assets.length) {
         
         console.log('release found')
