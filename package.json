@@ -1,6 +1,6 @@
 {
   "name": "github-release-manager",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Creates and downloads github releases",
   "main": "create-release.js",
   "scripts": {
