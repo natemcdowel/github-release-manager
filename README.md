@@ -9,5 +9,5 @@ Creates and downloads github releases
 - The contents of the `/release` directory will be gzipped and uploaded to a github release versioned by branch name.
 
 # Downloading a release
-- ```bash ./node_modules/github-release-manager/download_release.sh <branch> <owner> <repo>```
+- ```node ./node_modules/github-release-manager/download-release.js <branch> <github_token> <owner> <repo>```
 - The zipped release will be downloaded and unzipped to the `/release` directory.
