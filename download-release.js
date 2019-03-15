@@ -36,7 +36,7 @@ class GithubReleaseDownloader {
       console.log('Using asset id: ' + lastRelease.assets[0].id);
       console.log('Release created at: ' + lastRelease.created_at);
 
-      this.download(releasesSorted[0].assets[0].id);
+      this.download(lastRelease.assets[0].id);
       this.makeReleaseDir();
       this.unzipRelease();
 
