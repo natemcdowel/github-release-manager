@@ -2,7 +2,7 @@
 Creates and downloads github releases
 
 # Installation
-- `npm install github-release-creator`
+- `npm install github-release-manager`
 
 # Creating a release
 - ```node create-release.js <branch> <github_token> <owner> <repo>```
