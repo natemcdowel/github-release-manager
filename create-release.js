@@ -13,8 +13,7 @@ class GithubReleaseCreator {
   
   getReleaseData() {
     return JSON.stringify({
-      tag_name: 'release-' + TRAVIS_BRANCH_OR_TAG + '-' + date,
-      target_commitish: this.sha
+      tag_name: 'release-' + TRAVIS_BRANCH_OR_TAG + '-' + date
     });
   }
   
