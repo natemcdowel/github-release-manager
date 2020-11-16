@@ -15,21 +15,48 @@ class GithubReleaseDownloader {
   downloadRelease() {
     this.getReleases();
   }
-  
+
   getReleaseData() {
     return JSON.stringify({
       tag_name: 'release-' + TRAVIS_BRANCH_OR_TAG + '-' + date,
       target_commitish: TRAVIS_BRANCH_OR_TAG
     });
   }
-  
+
   getReleases() {
+    console.log('GitHub Release Downloader...');
+
+    if (!TRAVIS_BRANCH_OR_TAG || !GH_TOKEN || !OWNER || !REPO) {
+      console.log(`Error: Missing argument. Required: <branch> <github_token> <owner> <repo>`);
+      return;
+    }
+
+    console.log(`Repo: "${REPO}"`);
+    console.log(`Branch/Tag: "${TRAVIS_BRANCH_OR_TAG}"`);
+
     http.makeGetRequest(
       'https://api.github.com/repos/' + OWNER + '/' + REPO + '/releases' + TOKEN,
       HEADERS
     ).then(res => {
+      if (!res || !res.body) {
+        console.log(`Error: GitHub Release: Unexpected response "${res}"`);
+        return;
+      }
 
-      const releasesFound = JSON.parse(res.body).filter(release => release.tag_name.indexOf( 'release-' + TRAVIS_BRANCH_OR_TAG ) > -1);
+      let resBody = [];
+      try {
+        resBody = JSON.parse(res.body);
+      } catch(e) {
+        console.log(`Error: GitHub Release: Failed to parse response JSON. Message: "${e}"`);
+        return;
+      }
+
+      const releasesFound = resBody.filter(release => release.tag_name.indexOf( 'release-' + TRAVIS_BRANCH_OR_TAG ) > -1);
+      if (!releasesFound || !releasesFound.length) {
+        console.log(`Error: No releases found for "release-${TRAVIS_BRANCH_OR_TAG}"`);
+        return;
+      }
+
       const releasesSorted = _.sortBy(releasesFound, release => release.created_at);
       const lastRelease = releasesSorted[ releasesSorted.length -1 ];
 
@@ -40,20 +67,25 @@ class GithubReleaseDownloader {
       this.makeReleaseDir();
       this.unzipRelease();
 
-    });
+      console.log('Success: GitHub release downloaded!');
+    })
+    .catch((error) => console.log(`Error: ${error}`));
   }
 
   download(assetId) {
+    console.log('Downloading release...');
     shell.exec(
       `wget -q --auth-no-challenge --header='Accept:application/octet-stream' https://api.github.com/repos/${OWNER}/${REPO}/releases/assets/${assetId}?access_token=${GH_TOKEN} -O release.tar.gz`
     )
   }
 
   makeReleaseDir() {
+    console.log('Making "release" directory...');
     shell.exec('mkdir release');
   }
 
   unzipRelease() {
+    console.log('Extracting release...');
     shell.exec('tar -zvxf release.tar.gz');
   }
 

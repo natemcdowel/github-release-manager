@@ -14,7 +14,8 @@
   "author": "Nate McDowell",
   "license": "ISC",
   "devDependencies": {
+    "lodash": "latest",
     "request": "2.83.0",
-    "lodash": "latest"
+    "shelljs": "^0.8.4"
   }
 }
