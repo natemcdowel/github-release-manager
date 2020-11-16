@@ -9,11 +9,11 @@ class HttpWrapper {
         if (!error && response.statusCode == 200) {
           resolve(response);
         }
-        reject(error);
+        reject((response && `${response.statusCode}: ${response.statusMessage}`) || error);
       })
     });
   }
-  
+
   makePostRequest(url, body, contentType) {
     return new Promise((resolve, reject) => {
       request.post({url: url, headers: {'User-Agent': 'request', 'Content-Type': contentType}, body: body}, (error, response) => {
@@ -24,7 +24,7 @@ class HttpWrapper {
       });
     });
   }
-  
+
   makePatchRequest(url, body) {
     return new Promise((resolve, reject) => {
       request.patch({url: url, headers: {'User-Agent': 'request'}, body: body}, (error, response) => {
@@ -35,7 +35,7 @@ class HttpWrapper {
       });
     });
   }
-  
+
   makeDeleteRequest(url) {
     return new Promise((resolve, reject) => {
       request.delete({url: url, headers: {'User-Agent': 'request'}}, (error, response) => {
