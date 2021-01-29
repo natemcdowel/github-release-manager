@@ -23,7 +23,7 @@ class GithubReleaseCreator {
 
     http.makeFileUploadRequest(
       './release.tar.gz',
-      'https://uploads.github.com/repos/' + OWNER + '/' + REPO + '/releases/' + id + '/assets' + '&name=release.tar.gz',
+      'https://uploads.github.com/repos/' + OWNER + '/' + REPO + '/releases/' + id + '/assets' + '?name=release.tar.gz',
       GH_TOKEN
     ).then(res => {
 

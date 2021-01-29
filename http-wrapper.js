@@ -14,11 +14,11 @@ class HttpWrapper {
     });
   }
 
-  makePostRequest(url, body, contentType, token) {
+  makePostRequest(url, body, token, contentType) {
     return new Promise((resolve, reject) => {
       request.post({
         url: url,
-        headers: {'User-Agent': 'request', 'Content-Type': contentType, 'Authorization': `token ${token}`},
+        headers: {'User-Agent': 'request', 'Content-Type': contentType, 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json'},
         body: body
       }, (error, response) => {
         if (error) { reject(error); }
