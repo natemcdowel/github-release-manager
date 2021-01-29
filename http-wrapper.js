@@ -14,12 +14,14 @@ class HttpWrapper {
     });
   }
 
-  makePostRequest(url, body, contentType) {
+  makePostRequest(url, body, contentType, token) {
     return new Promise((resolve, reject) => {
-      request.post({url: url, headers: {'User-Agent': 'request', 'Content-Type': contentType}, body: body}, (error, response) => {
-        if (error) {
-          reject(error);
-        }
+      request.post({
+        url: url,
+        headers: {'User-Agent': 'request', 'Content-Type': contentType, 'Authorization': `token ${token}`},
+        body: body
+      }, (error, response) => {
+        if (error) { reject(error); }
         resolve(response);
       });
     });
@@ -47,7 +49,7 @@ class HttpWrapper {
     });
   }
 
-  makeFileUploadRequest(file, url) {
+  makeFileUploadRequest(file, url, token) {
     return new Promise((resolve, reject) => {
       const stats = fs.statSync(file);
 
@@ -59,7 +61,8 @@ class HttpWrapper {
             'User-Agent': 'Release-Agent',
             'Accept': 'application/vnd.github.v3+json',
             'Content-Length': stats.size,
-            'Content-Type': 'application/gzip'
+            'Content-Type': 'application/gzip',
+            'Authorization': `token ${token}`
           }
         },
         (error, response) => {
