@@ -1,9 +1,8 @@
-const HEADERS = {headers: {'User-Agent': 'request'}};
+const HEADERS = {headers: {'User-Agent': 'request', 'Authorization': `token ${GH_TOKEN}`, 'Accept': 'application/vnd.github.v3+json'}};
 const TRAVIS_BRANCH_OR_TAG = process.argv[2];
 const GH_TOKEN = process.argv[3];
 const OWNER = process.argv[4];
 const REPO = process.argv[5];
-const TOKEN = '?access_token=' + GH_TOKEN;
 let HttpWrapper = require('./http-wrapper.js');
 let _ = require('lodash');
 let shell = require('shelljs');
@@ -35,7 +34,7 @@ class GithubReleaseDownloader {
     console.log(`Branch/Tag: "${TRAVIS_BRANCH_OR_TAG}"`);
 
     http.makeGetRequest(
-      'https://api.github.com/repos/' + OWNER + '/' + REPO + '/releases' + TOKEN,
+      'https://api.github.com/repos/' + OWNER + '/' + REPO + '/releases',
       HEADERS
     ).then(res => {
       if (!res || !res.body) {
@@ -75,7 +74,7 @@ class GithubReleaseDownloader {
   download(assetId) {
     console.log('Downloading release...');
     shell.exec(
-      `wget -q --auth-no-challenge --header='Accept:application/octet-stream' https://api.github.com/repos/${OWNER}/${REPO}/releases/assets/${assetId}?access_token=${GH_TOKEN} -O release.tar.gz`
+      `wget -q --header='Accept:application/octet-stream' --header='Authorization: token ${GH_TOKEN}' https://api.github.com/repos/${OWNER}/${REPO}/releases/assets/${assetId} -O release.tar.gz`
     )
   }
 
