@@ -1,8 +1,8 @@
-const HEADERS = {headers: {'User-Agent': 'request', 'Authorization': `token ${GH_TOKEN}`, 'Accept': 'application/vnd.github.v3+json'}};
 const TRAVIS_BRANCH_OR_TAG = process.argv[2];
 const GH_TOKEN = process.argv[3];
 const OWNER = process.argv[4];
 const REPO = process.argv[5];
+const HEADERS = {headers: {'User-Agent': 'request', 'Authorization': `token ${GH_TOKEN}`, 'Accept': 'application/vnd.github.v3+json'}};
 let HttpWrapper = require('./http-wrapper.js');
 let _ = require('lodash');
 let shell = require('shelljs');

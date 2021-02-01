@@ -18,7 +18,12 @@ class HttpWrapper {
     return new Promise((resolve, reject) => {
       request.post({
         url: url,
-        headers: {'User-Agent': 'request', 'Content-Type': contentType, 'Authorization': `token ${token}`, 'Accept': 'application/vnd.github.v3+json'},
+        headers: {
+          'User-Agent': 'request',
+          'Content-Type': contentType,
+          'Authorization': `token ${token}`,
+          'Accept': 'application/vnd.github.v3+json'
+        },
         body: body
       }, (error, response) => {
         if (error) { reject(error); }
