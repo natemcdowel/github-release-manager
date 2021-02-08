@@ -74,7 +74,7 @@ class GithubReleaseDownloader {
   download(assetId) {
     console.log('Downloading release...');
     shell.exec(
-      `curl -sL --header "Authorization: token ${GH_TOKEN}" --header 'Accept: application/octet-stream' https://api.github.com/repos/${OWNER}/${REPO}/releases/assets/${assetId} > release.tar.gz`
+      `curl -s -H "Authorization: token ${GH_TOKEN}" -H "Accept:application/octet-stream" https://api.github.com/repos/${OWNER}/${REPO}/releases/assets/${assetId} -w "%{redirect_url}" | xargs curl -so release.tar.gz`
     )
   }
 
