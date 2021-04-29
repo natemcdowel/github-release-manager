@@ -15,7 +15,6 @@
   "license": "ISC",
   "devDependencies": {
     "lodash": "latest",
-    "request": "2.83.0",
-    "shelljs": "^0.8.4"
+    "request": "2.83.0"
   }
 }

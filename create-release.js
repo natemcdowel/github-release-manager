@@ -4,7 +4,7 @@ const OWNER = process.argv[4];
 const REPO = process.argv[5];
 
 let HttpWrapper = require('./http-wrapper.js');
-let shell = require('shelljs');
+const { exec } = require('child_process');
 let http = new HttpWrapper();
 let date = Date.now();
 
@@ -58,13 +58,23 @@ class GithubReleaseCreator {
   getSha() {
     return new Promise(resolve => {
 
-      const process = shell.exec('git rev-parse --verify HEAD', () => {});
-      process.stdout.on('data', (data) => {
-        this.sha = data.replace('\n', '');
+      exec('git rev-parse --verify HEAD', (error, stdout, stderr) => {
+        if (error) {
+          console.log(`error: Get SHA Failed: ${error.message}`);
+          resolve(null);
+          return;
+        }
+        if (stderr) {
+          console.log(`stderr: Get SHA Failed: ${stderr}`);
+          resolve(null);
+          return;
+        }
+        this.sha = stdout.trim();
+        console.log(`Get SHA Success: ${this.sha}`);
         resolve(this.sha);
       });
 
-    })
+    });
   }
 
 }
