@@ -1,4 +1,5 @@
-const TRAVIS_BRANCH_OR_TAG = process.argv[2];
+const BRANCH_OR_TAG = process.argv[2];
+const RELEASE_BRANCH_OR_TAG = `release-${BRANCH_OR_TAG}`;
 const GH_TOKEN = process.argv[3];
 const OWNER = process.argv[4];
 const REPO = process.argv[5];
@@ -8,38 +9,45 @@ let _ = require('lodash');
 const { exec } = require('child_process');
 let http = new HttpWrapper();
 let date = Date.now();
+let fs = require('fs');
+
+const RELEASE_DIR = 'release';
+const TAR_FILE = 'release.tar.gz';
 
 class GithubReleaseDownloader {
 
   downloadRelease() {
+    console.log(`GitHub Release Downloader...`);
+    console.log(`Repo: "${REPO}"`);
+    console.log(`Branch/Tag: "${RELEASE_BRANCH_OR_TAG}"`);
+
+    this.deleteReleaseDir();
+    this.deleteTarFile();
     this.getReleases();
   }
 
   getReleaseData() {
     return JSON.stringify({
-      tag_name: 'release-' + TRAVIS_BRANCH_OR_TAG + '-' + date,
-      target_commitish: TRAVIS_BRANCH_OR_TAG
+      tag_name: `${RELEASE_BRANCH_OR_TAG}-${date}`,
+      target_commitish: BRANCH_OR_TAG
     });
   }
 
-  getReleases() {
-    console.log('GitHub Release Downloader...');
+  getReleases(page = 1) {
+    console.log(`Searching for "${RELEASE_BRANCH_OR_TAG}" on page "${page}"...`);
 
-    if (!TRAVIS_BRANCH_OR_TAG || !GH_TOKEN || !OWNER || !REPO) {
+    if (!BRANCH_OR_TAG || !GH_TOKEN || !OWNER || !REPO) {
       console.log(`Error: Missing argument. Required: <branch> <github_token> <owner> <repo>`);
-      return;
+      process.exit(1);
     }
 
-    console.log(`Repo: "${REPO}"`);
-    console.log(`Branch/Tag: "${TRAVIS_BRANCH_OR_TAG}"`);
-
     http.makeGetRequest(
-      'https://api.github.com/repos/' + OWNER + '/' + REPO + '/releases',
+      `https://api.github.com/repos/${OWNER}/${REPO}/releases?page=${page}`,
       HEADERS
     ).then(res => {
       if (!res || !res.body) {
         console.log(`Error: GitHub Release: Unexpected response "${res}"`);
-        return;
+        process.exit(1);
       }
 
       let resBody = [];
@@ -47,13 +55,21 @@ class GithubReleaseDownloader {
         resBody = JSON.parse(res.body);
       } catch(e) {
         console.log(`Error: GitHub Release: Failed to parse response JSON. Message: "${e}"`);
-        return;
+        process.exit(1);
       }
 
-      const releasesFound = resBody.filter(release => release.tag_name.indexOf( 'release-' + TRAVIS_BRANCH_OR_TAG ) > -1);
-      if (!releasesFound || !releasesFound.length) {
-        console.log(`Error: No releases found for "release-${TRAVIS_BRANCH_OR_TAG}"`);
-        return;
+      let releasesFound;
+      if (resBody.length > 0) {
+        releasesFound = resBody.filter(release => release.tag_name.indexOf(RELEASE_BRANCH_OR_TAG) > -1);
+        if (!releasesFound || !releasesFound.length) {
+          // Look for release on the next page
+          return this.getReleases(page + 1);
+        }
+      }
+
+      if (!releasesFound) {
+        console.log(`Error: No releases found for "${RELEASE_BRANCH_OR_TAG}"`);
+        process.exit(1);
       }
 
       const releasesSorted = _.sortBy(releasesFound, release => release.created_at);
@@ -65,7 +81,10 @@ class GithubReleaseDownloader {
       return this.download(lastRelease.assets[0].id)
         .then(() => this.makeReleaseDir())
         .then(() => this.unzipRelease())
-        .then(() => console.log('Success: GitHub release downloaded!'));
+        .then(() => {
+          console.log(`Success: GitHub release "${RELEASE_BRANCH_OR_TAG}" downloaded!`);
+          process.exit(0);
+        });
     })
     .catch((error) => console.log(`Error: ${error}`));
   }
@@ -73,17 +92,17 @@ class GithubReleaseDownloader {
   download(assetId) {
     console.log('Downloading release...');
     return new Promise(resolve => {
-      const command = `curl -s -H "Authorization: token ${GH_TOKEN}" -H "Accept:application/octet-stream" https://api.github.com/repos/${OWNER}/${REPO}/releases/assets/${assetId} -w "%{redirect_url}" | xargs curl -so release.tar.gz`;
+      const command = `curl -s -H "Authorization: token ${GH_TOKEN}" -H "Accept:application/octet-stream" https://api.github.com/repos/${OWNER}/${REPO}/releases/assets/${assetId} -w "%{redirect_url}" | xargs curl -so ${TAR_FILE}`;
       exec(command, (error, stdout, stderr) => {
         if (error) {
           console.log(`error: Download Failed: ${error.message}`);
           resolve();
-          return;
+          process.exit(1);
         }
         if (stderr) {
           console.log(`stderr: Download Failed: ${stderr}`);
           resolve();
-          return;
+          process.exit(1);
         }
         console.log('Download Success.');
         resolve();
@@ -91,20 +110,34 @@ class GithubReleaseDownloader {
     });
   }
 
+  deleteReleaseDir() {
+    try {
+      fs.rmdirSync(RELEASE_DIR, { recursive: true });
+      console.log(`"${RELEASE_DIR}" has been deleted!`);
+    } catch (err) { }
+  }
+
+  deleteTarFile() {
+    try {
+      fs.unlinkSync(TAR_FILE);
+      console.log(`"${TAR_FILE}" has been deleted!`);
+    } catch (err) { }
+  }
+
   makeReleaseDir() {
-    console.log('Making "release" directory...');
+    console.log(`Making "${RELEASE_DIR}" directory...`);
     return new Promise(resolve => {
-      const command = `mkdir release`;
+      const command = `mkdir ${RELEASE_DIR}`;
       exec(command, (error, stdout, stderr) => {
         if (error) {
           console.log(`error: Directory Make Failed: ${error.message}`);
           resolve();
-          return;
+          process.exit(1);
         }
         if (stderr) {
           console.log(`stderr: Directory Make Failed: ${stderr}`);
           resolve();
-          return;
+          process.exit(1);
         }
         console.log('Directory Make Success.');
         resolve();
@@ -115,17 +148,12 @@ class GithubReleaseDownloader {
   unzipRelease() {
     console.log('Extracting release...');
     return new Promise(resolve => {
-      const command = `tar -zvxf release.tar.gz`;
-      exec(command, (error, stdout, stderr) => {
+      const command = `tar -zvxf ${TAR_FILE}`;
+      exec(command, (error) => {
         if (error) {
           console.log(`error: Extraction Failed: ${error.message}`);
           resolve();
-          return;
-        }
-        if (stderr) {
-          console.log(`stderr: Extraction Failed: ${stderr}`);
-          resolve();
-          return;
+          process.exit(1);
         }
         console.log('Extraction Success.');
         resolve();
