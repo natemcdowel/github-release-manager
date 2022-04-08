@@ -14,7 +14,9 @@
   "author": "Nate McDowell",
   "license": "ISC",
   "devDependencies": {
-    "lodash": "latest",
-    "request": "2.83.0"
+    "lodash": "latest"
+  },
+  "dependencies": {
+    "request": "^2.83.0"
   }
 }
